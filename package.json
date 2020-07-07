@@ -1,0 +1,21 @@
+{
+  "name": "ts-lib-file-events",
+  "version": "0.1.0",
+  "main": "index.js",
+  "author": "TetraScience",
+  "license": "UNLICENSED",
+  "private": true,
+  "peerDependencies": {
+    "aws-sdk": ">2.653.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.51",
+    "@types/node": "^13.13.4",
+    "aws-sdk": ">2.653.0",
+    "typescript": "^3.8.3"
+  },
+  "scripts": {
+    "test": "echo no tests defined",
+    "build": "tsc"
+  }
+}

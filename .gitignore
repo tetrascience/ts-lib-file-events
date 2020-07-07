@@ -1,0 +1,5 @@
+node_modules/
+builds/
+coverage/
+
+**/local.dev.env

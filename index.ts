@@ -16,16 +16,14 @@ export interface LogMessage {
   message: string;
   level: string;
   status?: string;
-  bucket?: string;
-  key?: string;
-  version?: string;
+  fileId?: string;
   reason?: string;
 }
 
 export interface EventPublisher {
   component: string;
   logger: Logger;
-  publish(status: string, bucket: string, key: string, version?: string): Promise<void>;
+  publish(status: string, fileId: string, contextId?: string): Promise<void>;
 }
 
 function defaultLogger(obj: LogMessage): void {}
@@ -43,23 +41,13 @@ export class FileEventPublisher implements EventPublisher {
     this.logger = logger || defaultLogger;
   }
 
-  publishS3Event(status: string, event: S3EventRecord): Promise<void> {
-    const bucket = event.s3.bucket.name;
-    const key = decodeURIComponent(event.s3.object.key.replace(/\+/g, ' '));
-    const version = event.s3.object.versionId;
-
-    return this.publish(status, bucket, key, version);
-  }
-
-  async publish(status: string, bucket: string, key: string, version?: string): Promise<void> {
+  async publish(status: string, fileId: string, contextId?: string): Promise<void> {
     if (!FILE_EVENT_QUEUE_URL) {
       this.logger({
         message: 'File Event Publisher missing FILE_EVENT_QUEUE_URL env var, cannot publish file event',
         level: 'DEBUG',
         status,
-        bucket,
-        key,
-        version,
+        fileId,
       });
 
       return;
@@ -68,9 +56,8 @@ export class FileEventPublisher implements EventPublisher {
     const event = {
       component: this.component,
       status,
-      bucket,
-      key,
-      version,
+      fileId,
+      contextId,
       createdAt: new Date().toISOString(),
     };
 
@@ -89,9 +76,7 @@ export class FileEventPublisher implements EventPublisher {
         message: 'File Event Publisher failed to publish file event',
         level: 'DEBUG',
         status,
-        bucket,
-        key,
-        version,
+        fileId,
         reason: err.message,
       });
     }

@@ -13,30 +13,21 @@ class FileEventPublisher {
         this.component = pckg.name;
         this.logger = logger || defaultLogger;
     }
-    publishS3Event(status, event) {
-        const bucket = event.s3.bucket.name;
-        const key = decodeURIComponent(event.s3.object.key.replace(/\+/g, ' '));
-        const version = event.s3.object.versionId;
-        return this.publish(status, bucket, key, version);
-    }
-    async publish(status, bucket, key, version) {
+    async publish(status, fileId, contextId) {
         if (!FILE_EVENT_QUEUE_URL) {
             this.logger({
                 message: 'File Event Publisher missing FILE_EVENT_QUEUE_URL env var, cannot publish file event',
                 level: 'DEBUG',
                 status,
-                bucket,
-                key,
-                version,
+                fileId,
             });
             return;
         }
         const event = {
             component: this.component,
             status,
-            bucket,
-            key,
-            version,
+            fileId,
+            contextId,
             createdAt: new Date().toISOString(),
         };
         try {
@@ -53,9 +44,7 @@ class FileEventPublisher {
                 message: 'File Event Publisher failed to publish file event',
                 level: 'DEBUG',
                 status,
-                bucket,
-                key,
-                version,
+                fileId,
                 reason: err.message,
             });
         }
